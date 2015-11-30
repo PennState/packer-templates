@@ -1,0 +1,38 @@
+---
+# file: playbook.yml
+- hosts: vagrant
+  sudo: yes
+  roles:
+    - { role: base }
+    - { role: java8 }
+    - { role: activemq }
+    - { role: wildfly }
+    - { role: oracle_driver }
+    - { role: properties_service }
+
+  tasks:
+    - name: copy the jboss cli scripts to the remote host's deployment directory
+      copy: src="{{ item }}" dest=~
+      with_items:
+        - cpr-ds.cli
+        - cpr-activemq-ra.cli
+    
+    - name: install cpr's prerequisites
+      shell: chdir=~ {{ wildfly_prog_directory }}/jboss-cli.sh --file="{{ item }}"
+      with_items:
+        - cpr-ds.cli
+        - cpr-activemq-ra.cli
+
+    - name: create the properties-service configuration directory
+      file: dest={{ wildfly_conf_directory }}/properties-service
+            owner={{ wildfly_user }} group={{ wildfly_group }} state=directory mode=0755
+      
+    - name: copy the cpr properties file to the correct location
+      copy: src=cpr.properties dest={{ wildfly_conf_directory }}/properties-service/cpr.properties
+            owner={{ wildfly_user }} group={{ wildfly_group }} mode=0644
+
+    - name: copy the activemq-rar.rar file to the deployments directory
+      command: cp ~/activemq-rar.rar {{ wildfly_deploy_directory}}/activemq-ra.rar
+               creates="{{ wildfly_deploy_directory}}/activemq-ra.rar"
+    - file: path={{ wildfly_deploy_directory}}/activemq-ra.rar
+            owner={{ wildfly_user }} group={{ wildfly_group }} mode=0644
