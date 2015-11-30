@@ -1,0 +1,6 @@
+/.project
+/.vagrant/
+*~
+/bin/
+.classpath
+vagrant_ansible_inventory_default

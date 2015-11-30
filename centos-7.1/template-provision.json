@@ -1,0 +1,43 @@
+{
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+                  "sudo yum install -y epel-release",
+                  "sudo yum install -y ansible"
+                ]
+
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "./ansible/playbook.yml",
+      "playbook_dir": "./ansible",
+      "role_paths": ["./ansible/infrastructure/roles"]
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "override": {
+        "virtualbox": {
+          "output": "centos-7-1-x64-virtualbox.box"
+        }
+      }
+    }
+  ],
+  "builders": [
+    {
+      "type": "null",
+      "ssh_host": "127.0.0.1",
+      "ssh_username": "packer",
+      "ssh_password": "packer"
+    },
+    {
+      "type": "virtualbox-ovf",
+      "ssh_username": "vagrant",
+      "ssh_password": "vagrant",
+      "source_path": "output-virtualbox-iso/packer-virtualbox-iso-1448918031.ovf",
+      "shutdown_command": "echo 'packer' | sudo -S shutdown -P now"
+    }
+  ]
+}

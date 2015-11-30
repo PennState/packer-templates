@@ -1,0 +1,107 @@
+---
+# File: roles/wildfly9/tasks/main.yml
+
+- name: download the wildfly archive file
+  get_url: url="{{ wildfly_archive_url }}"
+           dest="~/{{ wildfly_archive_name }}"
+
+- name: unzip the Wildfly archive file
+  shell: unzip -u ~/{{ wildfly_archive_name }} -d {{ wildfly_inst_directory }}
+         creates={{ wildfly_inst_directory }}/{{ wildfly_name }}
+  notify:
+    - restart wildfly
+    
+- name: create the wildfly group
+  group: name="{{ wildfly_group }}" state=present
+  
+- name: create the wildfly user
+  user: name="{{ wildfly_user }}" group="{{ wildfly_group }}" password="{{ wildfly_password }}" createhome={{ wildfly_user_home }} state=present
+  
+- name: make the wildfly user the owner of the wildfly files
+  file: path="{{ wildfly_inst_directory }}/{{ wildfly_name }}"
+        owner="{{ wildfly_user }}" group="{{ wildfly_group }}"
+        recurse=yes state=directory
+        
+- name: make a pretty symlink for wildfly
+  file: src="{{ wildfly_inst_directory }}/{{ wildfly_name }}"
+        path="{{ wildfly_inst_directory }}/{{ wildfly_service_name }}"
+        owner="{{ wildfly_user }}" group="{{ wildfly_group }}" state=link
+
+- name: create the directories for wildfly's PID and log files
+  file: path="{{ item }}" state=directory
+        owner="{{ wildfly_user }}" group="{{ wildfly_group }}"
+  with_items:
+    - "{{ wildfly_log_directory }}"
+    - "{{ wildfly_pid_directory }}"
+
+- name: set the JBOSS_USER environment variable in the startup script configuration file
+  lineinfile: dest="{{ wildfly_prog_directory }}/init.d/wildfly.conf"
+              regexp="^JBOSS_USER" insertafter="^# JBOSS_USER" line="JBOSS_USER={{ wildfly_user }}"
+  notify:
+    - restart wildfly
+
+- name: create a symlink for the startup script configuration file
+  file: src="{{ wildfly_prog_directory }}/init.d/wildfly.conf"
+        path="/etc/default/{{ wildfly_service_name }}.conf"
+        state=link
+        
+- name: create a symlink for the startup script
+  file: src="{{ wildfly_prog_directory }}/init.d/wildfly-init-redhat.sh"
+        path="/etc/init.d/{{ wildfly_service_name }}"
+        state=link
+        
+- name: register the wildfly startup script with chkconfig
+  shell: chkconfig --add wildfly creates=/etc/rc0.d/K20wildfly
+        
+- name: configure chkconfig to run the wildfly startup script at the correct run-levels
+  shell: chkconfig --level 2345 wildfly  on creates=/etc/rc2.d/S80wildfly
+  
+#- name: make sure wildfly is stopped
+#  service: name="{{ wildfly_service_name }}" state="stopped"
+  
+- name: save a copy of the wildfly distribution's standalone.xml
+  shell: mv standalone.xml standalone.xml.dist
+         chdir="{{ wildfly_conf_directory }}" creates=standalone.xml.dist
+  
+- name: copy the selected standalone wildfly profile to standalone.xml
+  shell: cp {{ wildfly_profile }}.xml standalone.xml
+         chdir="{{ wildfly_conf_directory }}" creates=standalone.xml
+
+- name: copy the wildfly scripts to the remote host's deployment directory
+  copy: src="{{ item }}" dest=~
+  with_items:
+    - wildfly_set_interface_addresses.cli
+    - wildfly_set_logging_level.cli
+    - psu-security-domain.cli
+    - wildfly-slsb-pool.cli
+
+- name: make sure wildfly is started
+  service: name="{{ wildfly_service_name }}" state="started"
+
+- name: run some wildfly configuration scripts
+  shell: chdir=~ {{ wildfly_prog_directory }}/jboss-cli.sh --file="{{ item }}" 
+  with_items:
+    - wildfly_set_interface_addresses.cli
+    - wildfly_set_logging_level.cli
+    - wildfly-slsb-pool.cli
+    - psu-security-domain.cli
+    
+#- name: make the jboss-as interfaces listen on all addresses
+#  lineinfile: dest={{ wildfly_conf_directory }}/standalone.xml
+#              regexp="{{ item }}" line="            <any-address />"
+#  with_items:
+#    - "<inet-address value=.*jboss.bind.address.management:|any-address"
+#    - "<inet-address value=.*jboss.bind.address:|any-address"
+#    - "<inet-address value=.*jboss.bind.address.unsecure:|any-address"
+#  notify:
+#    - restart wildfly
+
+- name: add an admin user for wildfly's web console
+  lineinfile: dest="{{ wildfly_conf_directory }}/mgmt-users.properties"
+              regexp="^vadmin=" insertafter="^#admin=" line="vadmin=d745a3c00ee100da10ad80d86e6f2dec"
+  
+- name: deploy the postgresql jdbc driver
+  jboss: src=/usr/share/java/postgresql92-jdbc.jar state=present 
+         deploy_path={{ wildfly_deploy_directory }} deployment=postgresql92-jdbc.jar
+  when: db_postgresql_installed is defined and db_postgresql_installed == true     
+         

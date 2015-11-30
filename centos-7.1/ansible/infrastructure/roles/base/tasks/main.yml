@@ -1,0 +1,52 @@
+---
+# file: roles/base/tasks/main.yml
+
+- name: add the AIT private RPM repository
+  copy: src=../files/ait_private.repo dest=/etc/yum.repos.d
+        owner=root group=root mode=0444
+        
+- name: install the epel yum repository
+  copy: src=epel-release-6-8.noarch.rpm dest=~/epel-release-6-8.noarch.rpm 
+- yum: name=/root/epel-release-6-8.noarch.rpm state=present
+- replace: dest=/etc/yum.repos.d/epel.repo
+           regexp="mirrorlist\=https"
+           replace="mirrorlist=http"
+        
+- name: install basic tools and utilities
+  yum: name={{ item }} state=latest
+  with_items:
+    - curl
+    - bind-utils
+    - tree
+    - unzip
+    - zip
+
+- name: turn off the IPv4 firewall
+  service: name=iptables state=stopped
+  
+- name: remove the IPv4 firewall startup script with chkconfig
+  shell: chkconfig iptables off creates=/etc/rc5.d/K92iptables
+
+- name: turn off the IPv6 firewall
+  service: name=ip6tables state=stopped
+  
+- name: remove the IPv6 firewall startup script with chkconfig
+  shell: chkconfig ip6tables off creates=/etc/rc5.d/K92ip6tables
+  
+- name: set timezone to easter standard
+  file: src=/usr/share/zoneinfo/America/New_York 
+        path=/etc/localtime state=link force=yes
+
+- name: install maven_artifact required dependency with yum
+  yum: name={{ item }} state=latest
+  with_items:
+    - python2-devel
+    - python-pip
+    - libxslt-devel
+    - libxml2-devel
+
+- name: install maven_artifact required dependency with pip
+  pip: name=lxml
+
+#- name: set timezone to easter standard
+#  file: ln -sf /usr/share/zoneinfo/EST /etc/localtime

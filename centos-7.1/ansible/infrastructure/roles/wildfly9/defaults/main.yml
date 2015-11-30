@@ -1,0 +1,4 @@
+---
+# file: roles/wildfly9/defaults/main.yml
+
+wildfly_user_home: no

@@ -1,0 +1,23 @@
+connect
+
+if (outcome == failed) of /subsystem=security/security-domain=psu-jaspi-security-domain:read-resource 
+  /subsystem=security/security-domain=psu-jaspi-security-domain:add(cache-type=default)
+end-if
+
+if (outcome == failed) of /subsystem=security/security-domain=psu-jaspi-security-domain/authentication=jaspi:read-resource
+  /subsystem=security/security-domain=psu-jaspi-security-domain/authentication=jaspi:add( \
+    auth-modules=[ \
+      {"code"=>"Dummy", "login-module-stack-ref"=>"psu-lm-stack", "flag"=>"required"} \
+    ] \
+  )
+
+  /subsystem=security/security-domain=psu-jaspi-security-domain/authentication=jaspi/login-module-stack=psu-lm-stack:add( \
+    login-modules=[ { \
+        "code"=>"edu.psu.javaee.security.login.DummyLoginModule", \
+        "flag"=>"optional" \
+    } ], \    
+    operation-headers={"allow-resource-service-restart"=>"true"} \
+  )
+
+end-if
+

@@ -1,0 +1,3 @@
+connect
+
+deploy --force /usr/share/java/postgresql92-jdbc.jar

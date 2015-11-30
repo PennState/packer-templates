@@ -1,0 +1,5 @@
+---
+# file: roles/wildfly9/handlers/main.yml
+
+- name: restart wildfly
+  service: name={{ wildfly_service_name }} state=restarted

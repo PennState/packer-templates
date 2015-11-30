@@ -1,0 +1,15 @@
+[ait-private]
+name=ait-private
+baseurl=http://yum.ait.psu.edu/ait/rhel/6/private/$basearch
+failovermethod=priority
+enabled=1
+gpgcheck=0
+priority = 1
+
+[ait-private-noarch]
+name=ait-private-noarch
+baseurl=http://yum.ait.psu.edu/ait/rhel/6/private/noarch
+failovermethod=priority
+enabled=1
+gpgcheck=0
+priority = 1

@@ -1,0 +1,15 @@
+---
+# roles/java8/tasks/main.yml
+
+- name: use yum to install the java8 package
+  yum: name=java-1.8.0-openjdk
+       state=latest
+
+# TODO: remove when java 8 has correct precedence
+- name: double workaround for java 1.8 having abnormally low precedence and ansible alternatives task not working
+  shell: alternatives --install /usr/bin/java java /usr/lib/jvm/jre-1.8.0-openjdk.i386/bin/java 1800000
+
+# TODO: remove when java 8 has correct precedence
+- name: set current java alternative to java 1.8
+  shell: alternatives --set java /usr/lib/jvm/jre-1.8.0-openjdk.i386/bin/java
+

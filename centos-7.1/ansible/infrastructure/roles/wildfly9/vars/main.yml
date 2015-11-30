@@ -1,0 +1,26 @@
+---
+# file: roles/wildfly9/vars/main.yml
+
+wildfly_download_url: "http://download.jboss.org/wildfly"
+wildfly_version: "9.0.1.Final"
+wildfly_name: "wildfly-{{ wildfly_version }}"
+wildfly_archive_name: "{{ wildfly_name }}.zip"
+wildfly_archive_url: "{{ wildfly_download_url }}/{{ wildfly_version }}/{{ wildfly_archive_name }}"
+
+wildfly_user: "wildfly"
+wildfly_group: "wildfly"
+wildfly_password: "$1$salty$SzJsU4qDcXp536Acnlp6I."
+
+wildfly_service_name: "wildfly"
+wildfly_profile: standalone-full
+
+wildfly_inst_directory: "/opt"
+wildfly_home_directory: "{{ wildfly_inst_directory }}/wildfly"
+wildfly_conf_directory: "{{ wildfly_home_directory }}/standalone/configuration"
+wildfly_deploy_directory: "{{ wildfly_home_directory }}/standalone/deployments"
+wildfly_prog_directory: "{{ wildfly_home_directory }}/bin"
+wildfly_work_directory: "/var/lib/jboss-as/standalone"
+
+wildfly_log_directory: "/var/log/{{ wildfly_service_name }}"
+wildfly_pid_directory: "/var/run/{{ wildfly_service_name }}"
+

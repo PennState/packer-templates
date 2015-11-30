@@ -1,0 +1,10 @@
+connect
+
+try 
+	/subsystem=logging/logger=edu.psu:add(category=edu.psu,level=DEBUG)
+catch 
+	/subsystem=logging/logger=edu.psu:remove
+	/subsystem=logging/logger=edu.psu:add(category=edu.psu,level=DEBUG)
+finally
+	/subsystem=logging/console-handler=CONSOLE:change-log-level(level=DEBUG)
+end-try

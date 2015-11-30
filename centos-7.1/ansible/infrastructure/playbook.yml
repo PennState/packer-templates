@@ -1,8 +1,9 @@
 ---
-# file: playbook.yml
+# file: security_service.yml
 - hosts: vagrant
   sudo: yes
   roles:
     - { role: base }
+    - { role: java7 }
     - { role: java8 }
-    - { role: wildfly }
+    - { role: wildfly9 }
