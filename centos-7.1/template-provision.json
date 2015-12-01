@@ -36,7 +36,7 @@
       "type": "virtualbox-ovf",
       "ssh_username": "vagrant",
       "ssh_password": "vagrant",
-      "source_path": "output-virtualbox-iso/packer-virtualbox-iso-1448918031.ovf",
+      "source_path": "output-virtualbox-iso/packer-virtualbox-iso-1448979264.ovf",
       "shutdown_command": "echo 'packer' | sudo -S shutdown -P now"
     }
   ]
