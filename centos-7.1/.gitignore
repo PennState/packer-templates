@@ -1,0 +1,4 @@
+.vagrant
+tmp
+output-virtualbox-iso
+packer_cache
