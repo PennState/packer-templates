@@ -9,10 +9,14 @@
 
     },
     {
+       "type": "file",
+       "source": "vagrant.pub",
+       "destination": "/home/vagrant/.ssh/authorized_keys"
+    },
+    {
       "type": "ansible-local",
       "playbook_file": "./ansible/playbook.yml",
-      "playbook_dir": "./ansible",
-      "role_paths": ["./ansible/infrastructure/roles"]
+      "playbook_dir": "./ansible"
     }
   ],
   "post-processors": [
@@ -36,7 +40,7 @@
       "type": "virtualbox-ovf",
       "ssh_username": "vagrant",
       "ssh_password": "vagrant",
-      "source_path": "output-virtualbox-iso/packer-virtualbox-iso-1448979264.ovf",
+      "source_path": "output-virtualbox-iso/packer-virtualbox-iso.ovf",
       "shutdown_command": "echo 'packer' | sudo -S shutdown -P now"
     }
   ]
